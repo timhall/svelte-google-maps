@@ -1,6 +1,6 @@
 umd
 es
-docs/public/bundle.*
+# docs/public/bundle.*
 
 node_modules
 .vscode
