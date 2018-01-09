@@ -1,11 +1,12 @@
 <script>
   export default {
     oncreate() {
-      const { context, lat, lng, title, icon } = this.get();
+      const { map, lat, lng, title, label, icon } = this.get();
 
-      const marker = context.marker({ 
+      const marker = map.marker({ 
         position: { lat, lng },
         title,
+        label,
         icon
       });
       this.set({ marker });

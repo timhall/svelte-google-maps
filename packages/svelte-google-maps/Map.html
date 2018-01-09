@@ -29,12 +29,12 @@
 
     methods: {
       async load() {
-        let { context, loaded, loading } = this.get();
+        let { map, loaded, loading } = this.get();
 
         if (loaded) return;
         if (loading) return loading;
 
-        loading = context.load(this.refs.map);
+        loading = map.load(this.refs.map);
         this.set({ loaded: false, loading });
 
         await loading;
@@ -45,25 +45,25 @@
     events: { intersection },
 
     oncreate() {
-      const { context, center, zoom, defer } = this.get();
+      const { map, center, zoom, defer } = this.get();
 
       // Use `changer` to avoid additional sets/changes
       const change = changer();
 
-      // Pass map values to map context
-      context.set({ center, zoom });
+      // Pass map values to map map
+      map.set({ center, zoom });
 
-      // Subscribe to changes from map context
-      this.subscription = context.onchange(values => {
+      // Subscribe to changes from map map
+      this.subscription = map.onchange(values => {
         change(() => this.set(values));
       });
 
-      // Update map context when relevant values change
+      // Update map map when relevant values change
       this.observe('center', center => {
-        change(() => context.set({ center }));
+        change(() => map.set({ center }));
       }, { init: false });
       this.observe('zoom', zoom => {
-        change(() => context.set({ zoom }));
+        change(() => map.set({ zoom }));
       }, { init: false });
 
       // Load map immediately or wait until interaction for defer

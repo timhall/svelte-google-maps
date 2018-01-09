@@ -1,10 +1,11 @@
 <h1>Pulse Map</h1>
 
 <div ref:container>
-  <Map :context defer bind:center bind:zoom description="Map of GRTC Pulse Locations">
-    <Marker :context lat=37.540725 lng=-77.436048 title="Richmond, VA" />
-    <Marker :context lat=37.540725 lng=-77.336048 icon="https://maps.google.com/mapfiles/kml/shapes/parking_lot_maps.png" />
-    <Overlay :context lat=37.540725 lng=-77.436048>Overlay Content...</Overlay>
+  <Map :map defer bind:center bind:zoom description="Map of GRTC Pulse Locations">
+    <Marker :map lat=37.540725 lng=-77.436048 title="Richmond, VA" />
+    <Marker :map lat=37.540725 lng=-77.236048 label="A" />
+    <Marker :map lat=37.540725 lng=-77.336048 icon="https://maps.google.com/mapfiles/kml/shapes/parking_lot_maps.png" />
+    <Overlay :map lat=37.540725 lng=-77.436048>Overlay Content...</Overlay>
   </Map>
 </div>
 
@@ -41,7 +42,7 @@
     
     data() {
       return {
-        context: new Context(API_KEY, { beta: true }),
+        map: new Context(API_KEY, { beta: true }),
         center: RICHMOND,
         zoom: 11
       };
