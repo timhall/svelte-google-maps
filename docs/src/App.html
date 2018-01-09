@@ -1,32 +1,35 @@
-<div class="max-w-md mx-auto">
-  <h1 class="mb-3 mt-6">Pulse Map</h1>
-
-  <div ref:container>
+<div class="sm:flex border border-grey border-solid">
+  <div ref:background class="sm:w-64">
+    <img class="p-3 mt-4" src="public/pulse-logo-dark.png" alt="GRTC Pulse">
+  </div>
+  <div ref:container class="w-full border-b border-grey border-solid">
     <Map :map defer bind:center bind:zoom>
-      <Marker :map position={{center}} title="Richmond, VA" />
-      <Marker :map position={{positions[0]}} label="A" />
-      <Marker :map position={{positions[1]}} icon="https://maps.google.com/mapfiles/kml/shapes/parking_lot_maps.png" />
-      
-      <Overlay :map position={{center}} offset={{offset}}>
-        <div class="p-4 bg-white">
-          <h4>Overlay</h4>
-          <label for="zoom">Zoom</label>: <input type="range" min="1" max="12" bind:value="zoom" class="align-text-top" /> {{zoom}}
-        </div>
-      </Overlay>
+      {{#each stations as station}}
+        <Marker :map position={{station.position}} title={{station.title}} :icon on:click="set({ selected: station })" />
+      {{/each}}
+
+      <Polyline :map path={{route}} />
+
+      {{#if selected}}
+        <Info :map position={{selected.position}} on:close="set({ selected: null })">{{selected.title}}</Info>
+      {{/if}}
     </Map>
   </div>
+</div>
 
-  <p class="mt-4 text-center">
-    Latitude: {{center.lat.toFixed(6)}} &mdash;
-    Longitude: {{center.lng.toFixed(6)}} &mdash;
-    <label for="zoom">Zoom</label>: <input type="range" min="1" max="12" bind:value="zoom" class="align-text-top" /> {{zoom}}
-  </p>
+<div class="my-4 text-grey-darker text-sm text-right">
+  Latitude: {{center.lat.toFixed(6)}} &mdash; Longitude: {{center.lng.toFixed(6)}} &mdash;
+  <label for="zoom">Zoom</label>:
+  <input type="range" min="1" max="18" bind:value="zoom" class="align-text-top" /> {{zoom}}
 </div>
 
 <style>
   ref:container {
-    height: 400px;
-    border: solid 1px #ccc;
+    height: 600px;
+  }
+
+  ref:background {
+    background-color: #005da5;
   }
 </style>
 
@@ -34,27 +37,37 @@
   import { Context } from 'svelte-google-maps';
   import Map from 'svelte-google-maps/Map.html';
   import Marker from 'svelte-google-maps/Marker.html';
-  import Overlay from 'svelte-google-maps/Overlay.html';
+  import Polyline from 'svelte-google-maps/Polyline.html';
+  import Info from 'svelte-google-maps/Info.html';
+  import { center, stations, route } from './data';
 
   const API_KEY = process.env.API_KEY;
-  const RICHMOND = { lat: 37.540725, lng: -77.436048 };
+  const icon = {
+    path: 'M 0,0 m -2,0 a 2,2 0 2,0 4,0 a 2,2 0 2,0 -4,0',
+    fillColor: '#61bb46',
+    fillOpacity: 1,
+    scale: 3,
+    strokeColor: '#005da5',
+    strokeWeight: 2.5
+  };
 
   export default {
-    components: { Map, Marker, Overlay },
-    
+    components: { Map, Marker, Polyline, Info },
+
     data() {
       return {
         map: new Context(API_KEY, { beta: true }),
-        center: RICHMOND,
-        zoom: 11,
-        positions: [
-          { lat: 37.540725, lng: -77.336048 },
-          { lat: 37.540725, lng: -77.236048 }
-        ],
+        center,
+        zoom: 13,
+        stations,
+        route,
+        icon,
+
         offset(container) {
           const { offsetWidth: width } = container;
           return { x: -width / 2, y: 10 };
-        }
+        },
+        selected: null
       };
     }
   }

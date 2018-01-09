@@ -17,6 +17,10 @@
         map
       });
 
+      marker.addListener('click', event => {
+        this.fire('click', { marker });
+      });
+
       this.get('marker').resolve(marker);
     },
 

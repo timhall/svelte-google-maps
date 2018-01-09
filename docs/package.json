@@ -7,7 +7,7 @@
     "start": "serve ."
   },
   "dependencies": {
-    "svelte-google-maps": "^0.0.0"
+    "svelte-google-maps": "^0.1.0"
   },
   "devDependencies": {
     "chokidar": "^1.7.0",

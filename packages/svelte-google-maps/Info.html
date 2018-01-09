@@ -1,0 +1,91 @@
+<!-- Svelte needs to maintain control of DOM, so pass inner content to InfoWindow -->
+<!-- TODO Use <Overlay> -->
+<div>
+  <div ref:content><slot /></div>
+</div>
+
+<style>
+  :global(.svelte-google-maps-iw) {
+    background-color: red;
+  }
+</style>
+
+<script>
+  import { deferred, defer, changer } from './src/utils';
+
+  export default {
+    data() {
+      return {
+        info: deferred(),
+        manual: false
+      };
+    },
+
+    async oncreate() {
+      const { map: context, position, manual } = this.get();
+      const content = this.refs.content;
+
+      const { api, map } = await context.ready();
+      const info = new api.InfoWindow({
+        content,
+        position,
+        pixelOffset: new api.Size(0, 10)
+      });
+
+      const change = changer();
+      info.addListener('closeclick', () => {
+        this.fire('close', info);
+      });
+      info.addListener('position_changed', () => {
+        change(() => {
+          const position = info.getPosition();
+          const lat = position.lat();
+          const lng = position.lng();
+
+          this.set({ position: { lat, lng } });
+        });
+      });
+
+      // For some reason, the arrow is mis-positioned
+      // for the time-being, hide it.
+      info.addListener('domready', () => {
+        document.querySelectorAll('.gm-style-iw').forEach(tooltip => {
+          try {
+            const background = tooltip.parentNode.firstChild;
+            const shadow = background.childNodes[0];
+            const arrow = background.childNodes[2];
+            
+            shadow.style.display = arrow.style.display = 'none'; 
+          } catch(err) {}
+        });
+      });   
+      
+      this.observe('position', position => {
+        change(() => info.setPosition(position));
+      });
+
+      this.get('info').resolve(info);
+
+      if (!manual) this.open();
+    },
+
+    async ondestroy() {
+      this.close();
+    },
+
+    methods: {
+      async open() {
+        const map = await this.get('map').map;
+        const info = await this.get('info');
+
+        info.open(map);
+      },
+
+      async close() {
+        const info = await this.get('info');
+
+        info.close();
+      }
+    }
+  }
+</script>
