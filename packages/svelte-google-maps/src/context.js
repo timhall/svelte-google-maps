@@ -14,18 +14,18 @@ export default class Context {
 
   async load(element, options) {
     const api = await load(this.url);
-    const instance = new api.Map(element, options);
+    const map = new api.Map(element, options);
 
     this.api.resolve(api);
-    this.instance.resolve(instance);
+    this.instance.resolve(map);
 
-    return instance;
+    return { api, map };
   }
 
   async ready() {
     const api = await this.api;
-    const instance = await this.instance;
+    const map = await this.instance;
 
-    return { api, instance };
+    return { api, map };
   }
 }

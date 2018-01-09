@@ -1,34 +1,75 @@
-<div ref:container>
+<div ref:container style="transform: translate({{translation.x}}px, {{translation.y}}px); position: absolute;">
   <slot />
 </div>
 
 <script>
+  import { deferred } from './src/utils';
+
   export default {
-    oncreate() {
-      const { map, lat, lng } = this.get();
-      const paneType = 'float';
+
+
+    data() {
+      return {
+        overlay: deferred(),
+        mapPane: 'floatPane',
+        translation: { x: 0, y: 0 }
+      };
+    },
+
+    async oncreate() {
+      const { map: context, mapPane, position, bounds } = this.get();
       const container = this.refs.container;
+      let getOffset = prepareOffset(this.get('offset'), container);
+      
 
-      const overlay = map.ready().then(({ api, instance }) => {
-        const overlay = new api.OverlayView();
+      const { api, map } = await context.ready();
+      const overlay = new api.OverlayView();
+      const component = this;
 
-        overlay.onAdd = function() {
-          const pane = this.getPanes()[`${paneType}Pane`];
-          if (!pane) throw new Error(`No pane found for type "${paneType}"`);
+      overlay.onAdd = function () {
+        const pane = this.getPanes()[mapPane];
+        if (!pane) throw new Error(`No pane found for type "${mapPane}"`);
 
-          pane.appendChild(container);
-        };
-        overlay.draw = function() {
-          // TODO
+        pane.appendChild(container);
+      };
+
+      overlay.draw = function () {
+        if (position) {
+          const { lat, lng } = position;
+          const offset = getOffset();
+
           const projection = this.getProjection();
-          const position = new google.maps.LatLng(lat, lng);
-          const translation = projection.fromLatLngToDivPixel(position);
-        };
+          const { x, y } = projection.fromLatLngToDivPixel(new api.LatLng(lat, lng));
 
-        overlay.setMap(instance);
-        return overlay;
-      });
-      this.set({ overlay });
+          const translation = { x: x + offset.x, y: y + offset.y };
+          component.set({ translation });
+        } else if (bounds) {
+          console.log('bounds', bounds);
+        }
+      };
+
+      // Redraw overlay on positioning changes
+      this.observe('position', () => overlay.draw(), { init: false });
+      this.observe('bounds', () => overlay.draw(), { init: false });
+      this.observe('offset', value => {
+        getOffset = prepareOffset(value, container);
+        overlay.draw();
+      }, { init: false });
+
+      overlay.setMap(map);
+      this.get('overlay').resolve(overlay);
+    }
+  }
+
+  function prepareOffset(offset, container) {
+    if (typeof offset === 'function') {
+      return () => {
+        const value = offset(container);
+        return { x: value && value.x || 0, y: value && value.y || 0 };
+      };
+    } else {
+      const value = { x: offset && offset.x || 0, y: offset && offset.y || 0 };
+      return () => value;
     }
   }
 </script>

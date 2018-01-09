@@ -31,13 +31,13 @@
     events: { intersection },
 
     oncreate() {
-      // Load map immediately or wait until interaction for defer
+      // Load map immediately or wait defer until intersection
       const defer = this.get('defer');
       if (!defer || defer === 'false') this.load();
     },
 
     async ondestroy() {
-      let { instance, loading } = this.get('instance');
+      let { instance, loading } = this.get();
       
       if (!instance && loading) instance = await loading;
       if (!instance) return;
@@ -48,12 +48,12 @@
 
     methods: {
       async load() {
-        let { instance, map, center, zoom, loaded, loading } = this.get();
+        let { instance, map: context, center, zoom, loaded, loading } = this.get();
 
         if (loaded) return instance;
         if (loading) return loading;
 
-        loading = map.load(this.refs.map, { center, zoom });
+        loading = context.load(this.refs.map, { center, zoom }).then(({ map }) => map);
         this.set({ loaded: false, loading });
 
         instance = await loading;

@@ -1,20 +1,27 @@
 <script>
-  export default {
-    oncreate() {
-      let { map, position, lat, lng, title, label, icon } = this.get();
-      if (lat && lng && !position) position = { lat: Number(lat), lng: Number(lng) };
+  import { deferred } from './src/utils';
 
-      const marker = map.ready().then(({ api, instance }) => {
-        return new api.Marker({
-          position,
-          title,
-          label,
-          icon,
-          map: instance
-        });
+  export default {
+    data() {
+      return {
+        marker: deferred()
+      };
+    },
+
+    async oncreate() {
+      let { map: context, position, title, label, icon } = this.get();
+
+      const { api, map } = await context.ready();
+
+      const marker = new api.Marker({
+        position,
+        title,
+        label,
+        icon,
+        map
       });
-      
-      this.set({ marker });
+
+      this.get('marker').resolve(marker);
     },
 
     async ondestroy() {
