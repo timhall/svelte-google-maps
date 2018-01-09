@@ -4,14 +4,20 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import filesize from 'rollup-plugin-filesize';
 import uglify from 'rollup-plugin-uglify-es';
+import pkg from './package.json';
 
 const production = false;
+const banner = `/*!
+ * ${pkg.name} - ${pkg.description}
+ * v${pkg.version} - ${pkg.homepage} - @license: ${pkg.license}
+ */`
 
 export default {
   input: 'src/index.umd.js',
   output: {
     sourcemap: true,
     format: 'umd',
+    banner,
     file: 'umd/svelte-google-maps.js'
   },
   name: 'SvelteGoogleMaps',
