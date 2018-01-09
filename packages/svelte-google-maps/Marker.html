@@ -1,10 +1,11 @@
 <script>
   export default {
     oncreate() {
-      const { map, lat, lng, title, label, icon } = this.get();
+      let { map, lat, lng, title, label, icon, position } = this.get();
+      if (lat && lng && !position) position = { lat: Number(lat), lng: Number(lng) };
 
       const marker = map.marker({ 
-        position: { lat, lng },
+        position,
         title,
         label,
         icon

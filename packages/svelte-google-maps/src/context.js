@@ -65,9 +65,6 @@ export default class Context extends Store {
 
       this.change(() => this.set({ center: { lat, lng } }));
     });
-    map.addListener('tilt_changed', () => {
-      console.log('tilt...');
-    });
 
     this.map = map;
     this.api.resolve(api);
