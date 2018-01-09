@@ -1,4 +1,4 @@
-import { load, deferred, changer, noop } from './utils';
+import { load, deferred } from './utils';
 
 export default class Context {
   constructor(API_KEY, options = {}) {
@@ -9,7 +9,6 @@ export default class Context {
 
     this.api = deferred();
     this.instance = deferred();
-    this.change = changer();
   }
 
   async load(element, options) {

@@ -1,8 +1,8 @@
 {
-  "name": "pulse-map",
+  "name": "svelte-google-maps-monorepo",
   "private": true,
   "workspaces": ["packages/*", "docs"],
   "scripts": {
-    "build": "cd packages/svelte-google-maps && yarn build && cd ../pulse-map && yarn build"
+    "build": "cd packages/svelte-google-maps && yarn build && cd ../../docs && yarn build"
   }
 }

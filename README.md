@@ -1,9 +1,11 @@
-# pulse-map
+# svelte-google-maps
 
-Monorepo containing svelte-google-maps and an example application with an interactive GRTC Pulse map. 
+- [svelte-google-maps](https://github.com/timhall/svelte-google-maps/tree/master/packages/svelte-google-docs)
+- [Example](https://github.com/timhall/svelte-google-maps/tree/master/docs)
 
 ## Development
 
-1. `cd packages/svelte-google-maps` and `yarn build:es --watch`
-2. `cd docs` and `yarn build --watch`
-3. `cd docs` and `yarn start`
+1. `yarn`
+2. `cd packages/svelte-google-maps` and `yarn build:es --watch`
+3. `cd docs` and `yarn build --watch`
+4. `cd docs` and `yarn start`

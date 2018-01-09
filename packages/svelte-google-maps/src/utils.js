@@ -51,5 +51,3 @@ export function changer() {
 export function defer(callback) {
   setTimeout(callback, 0);
 }
-
-export function noop() {}

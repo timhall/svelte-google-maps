@@ -12,6 +12,7 @@
   "files": [
     "es",
     "umd",
+    "src",
     "Map.html",
     "Marker.html",
     "Overlay.html"

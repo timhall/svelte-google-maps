@@ -2,11 +2,7 @@
   import { deferred } from './src/utils';
 
   export default {
-    data() {
-      return {
-        marker: deferred()
-      };
-    },
+    data: () => ({ marker: deferred() }),
 
     async oncreate() {
       let { map: context, position, title, label, icon } = this.get();

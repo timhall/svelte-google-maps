@@ -6,8 +6,6 @@
   import { deferred } from './src/utils';
 
   export default {
-
-
     data() {
       return {
         overlay: deferred(),
@@ -19,8 +17,9 @@
     async oncreate() {
       const { map: context, mapPane, position, bounds } = this.get();
       const container = this.refs.container;
-      let getOffset = prepareOffset(this.get('offset'), container);
       
+      // Normalize offset into function that always returns { x, y }
+      let getOffset = prepareOffset(this.get('offset'), container);
 
       const { api, map } = await context.ready();
       const overlay = new api.OverlayView();
@@ -44,6 +43,7 @@
           const translation = { x: x + offset.x, y: y + offset.y };
           component.set({ translation });
         } else if (bounds) {
+          // TODO
           console.log('bounds', bounds);
         }
       };
