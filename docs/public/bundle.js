@@ -293,226 +293,6 @@ var protoDev = {
 	_unmount: _unmount
 };
 
-function assign$1(target) {
-	var k,
-		source,
-		i = 1,
-		len = arguments.length;
-	for (; i < len; i++) {
-		source = arguments[i];
-		for (k in source) target[k] = source[k];
-	}
-
-	return target;
-}
-
-function blankObject$1() {
-	return Object.create(null);
-}
-
-function differs$1(a, b) {
-	return a !== b || ((a && typeof a === 'object') || typeof a === 'function');
-}
-
-function dispatchObservers$1(component, group, changed, newState, oldState) {
-	for (var key in group) {
-		if (!changed[key]) continue;
-
-		var newValue = newState[key];
-		var oldValue = oldState[key];
-
-		var callbacks = group[key];
-		if (!callbacks) continue;
-
-		for (var i = 0; i < callbacks.length; i += 1) {
-			var callback = callbacks[i];
-			if (callback.__calling) continue;
-
-			callback.__calling = true;
-			callback.call(component, newValue, oldValue);
-			callback.__calling = false;
-		}
-	}
-}
-
-function get$1(key) {
-	return key ? this._state[key] : this._state;
-}
-
-function observe$1(key, callback, options) {
-	var group = options && options.defer
-		? this._observers.post
-		: this._observers.pre;
-
-	(group[key] || (group[key] = [])).push(callback);
-
-	if (!options || options.init !== false) {
-		callback.__calling = true;
-		callback.call(this, this._state[key]);
-		callback.__calling = false;
-	}
-
-	return {
-		cancel: function() {
-			var index = group[key].indexOf(callback);
-			if (~index) group[key].splice(index, 1);
-		}
-	};
-}
-
-function Store(state) {
-	this._observers = { pre: blankObject$1(), post: blankObject$1() };
-	this._changeHandlers = [];
-	this._dependents = [];
-
-	this._computed = blankObject$1();
-	this._sortedComputedProperties = [];
-
-	this._state = assign$1({}, state);
-}
-
-assign$1(Store.prototype, {
-	_add: function(component, props) {
-		this._dependents.push({
-			component: component,
-			props: props
-		});
-	},
-
-	_init: function(props) {
-		var state = {};
-		for (var i = 0; i < props.length; i += 1) {
-			var prop = props[i];
-			state['$' + prop] = this._state[prop];
-		}
-		return state;
-	},
-
-	_remove: function(component) {
-		var i = this._dependents.length;
-		while (i--) {
-			if (this._dependents[i].component === component) {
-				this._dependents.splice(i, 1);
-				return;
-			}
-		}
-	},
-
-	_sortComputedProperties: function() {
-		var computed = this._computed;
-		var sorted = this._sortedComputedProperties = [];
-		var cycles;
-		var visited = blankObject$1();
-
-		function visit(key) {
-			if (cycles[key]) {
-				throw new Error('Cyclical dependency detected');
-			}
-
-			if (visited[key]) return;
-			visited[key] = true;
-
-			var c = computed[key];
-
-			if (c) {
-				cycles[key] = true;
-				c.deps.forEach(visit);
-				sorted.push(c);
-			}
-		}
-
-		for (var key in this._computed) {
-			cycles = blankObject$1();
-			visit(key);
-		}
-	},
-
-	compute: function(key, deps, fn) {
-		var value;
-
-		var c = {
-			deps: deps,
-			update: function(state, changed, dirty) {
-				var values = deps.map(function(dep) {
-					if (dep in changed) dirty = true;
-					return state[dep];
-				});
-
-				if (dirty) {
-					var newValue = fn.apply(null, values);
-					if (differs$1(newValue, value)) {
-						value = newValue;
-						changed[key] = true;
-						state[key] = value;
-					}
-				}
-			}
-		};
-
-		c.update(this._state, {}, true);
-
-		this._computed[key] = c;
-		this._sortComputedProperties();
-	},
-
-	get: get$1,
-
-	observe: observe$1,
-
-	onchange: function(callback) {
-		this._changeHandlers.push(callback);
-		return {
-			cancel: function() {
-				var index = this._changeHandlers.indexOf(callback);
-				if (~index) this._changeHandlers.splice(index, 1);
-			}
-		};
-	},
-
-	set: function(newState) {
-		var oldState = this._state,
-			changed = this._changed = {},
-			dirty = false;
-
-		for (var key in newState) {
-			if (this._computed[key]) throw new Error("'" + key + "' is a read-only property");
-			if (differs$1(newState[key], oldState[key])) changed[key] = dirty = true;
-		}
-		if (!dirty) return;
-
-		this._state = assign$1({}, oldState, newState);
-
-		for (var i = 0; i < this._sortedComputedProperties.length; i += 1) {
-			this._sortedComputedProperties[i].update(this._state, changed);
-		}
-
-		for (var i = 0; i < this._changeHandlers.length; i += 1) {
-			this._changeHandlers[i](this._state, changed);
-		}
-
-		dispatchObservers$1(this, this._observers.pre, changed, this._state, oldState);
-
-		var dependents = this._dependents.slice(); // guard against mutations
-		for (var i = 0; i < dependents.length; i += 1) {
-			var dependent = dependents[i];
-			var componentState = {};
-			dirty = false;
-
-			for (var j = 0; j < dependent.props.length; j += 1) {
-				var prop = dependent.props[j];
-				if (prop in changed) {
-					componentState['$' + prop] = this._state[prop];
-					dirty = true;
-				}
-			}
-
-			if (dirty) dependent.component.set(componentState);
-		}
-
-		dispatchObservers$1(this, this._observers.post, changed, this._state, oldState);
-	}
-});
-
 let loading;
 
 async function load(url) {
@@ -563,81 +343,33 @@ function changer() {
   };
 }
 
-
-
-
-
-function noop$1() {}
-
-class Context extends Store {
+class Context {
   constructor(API_KEY, options = {}) {
-    super();
-
     const { beta = false } = options;
     this.url = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}${
       beta ? '&v=3.exp&use_slippy=true' : ''
     }`;
 
-    this.map = null;
     this.api = deferred();
+    this.instance = deferred();
     this.change = changer();
-
-    this.onchange((values, changed) => {
-      if (!this.map) return;
-      if (changed.center) this.change(() => this.map.setCenter(values.center));
-      if (changed.zoom) this.change(() => this.map.setZoom(values.zoom));
-    });
   }
 
-  async marker(options) {
-    const api = await this.api;
-    const map = this.map;
-
-    const marker = new api.Marker(options);
-    marker.setMap(map);
-
-    return marker;
-  }
-
-  async overlay(element, options = {}) {
-    const { draw = noop$1, pane: paneType = 'float' } = options;
-    const api = await this.api;
-    const map = this.map;
-
-    const overlay = new api.OverlayView();
-    overlay.onAdd = function() {
-      const pane = this.getPanes()[`${paneType}Pane`];
-      if (!pane) throw new Error(`No pane found for type "${paneType}"`);
-
-      pane.appendChild(element);
-    };
-    overlay.draw = draw;
-    overlay.setMap(map);
-
-    return overlay;
-  }
-
-  async load(element) {
+  async load(element, options) {
     const api = await load(this.url);
-    const map = new api.Map(element, this.get());
+    const instance = new api.Map(element, options);
 
-    map.addListener('zoom_changed', () => {
-      const zoom = map.getZoom();
-
-      this.change(() => this.set({ zoom }));
-    });
-    map.addListener('center_changed', () => {
-      const center = map.getCenter();
-      const lat = center.lat();
-      const lng = center.lng();
-
-      this.change(() => this.set({ center: { lat, lng } }));
-    });
-
-    this.map = map;
     this.api.resolve(api);
+    this.instance.resolve(instance);
 
-    return this;
+    return instance;
+  }
+
+  async ready() {
+    const api = await this.api;
+    const instance = await this.instance;
+
+    return { api, instance };
   }
 }
 
@@ -664,8 +396,6 @@ function changer$1() {
     changing = false;
   };
 }
-
-
 
 function defer(callback) {
   setTimeout(callback, 0);
@@ -711,6 +441,7 @@ function data$1() {
     defer: false,
     center: { lat: 0, lng: 0 },
     zoom: 8,
+    instance: null,
     loading: null,
     loaded: false
   };
@@ -718,51 +449,71 @@ function data$1() {
 
 var methods = {
   async load() {
-    let { map, loaded, loading } = this.get();
+    let { instance, map, center, zoom, loaded, loading } = this.get();
 
-    if (loaded) return;
+    if (loaded) return instance;
     if (loading) return loading;
 
-    loading = map.load(this.refs.map);
+    loading = map.load(this.refs.map, { center, zoom });
     this.set({ loaded: false, loading });
 
-    await loading;
-    this.set({ loaded: true, loading: null });
+    instance = await loading;
+
+    // Setup two-way binding between component and map
+    // - Use `changer` to avoid additional sets/changes for internal changes
+    const change = changer$1();
+
+    // Attach listeners to instance
+    instance.addListener('zoom_changed', () => {
+      change(() => {
+        const zoom = instance.getZoom();
+        this.set({ zoom });
+      });
+    });
+
+    instance.addListener('center_changed', () => {          
+      change(() => {
+        const center = instance.getCenter();
+        const lat = center.lat();
+        const lng = center.lng();
+
+        this.set({ center: { lat, lng } });
+      });
+    });
+
+    // Attach observers to component
+    this.observe('center', center => {
+      change(() => instance.setCenter(center));
+    }, { init: false });
+
+    this.observe('zoom', zoom => {
+      change(() => instance.setZoom(zoom));
+    }, { init: false });
+
+    this.set({ instance, loaded: true, loading: null });
+
+    return instance;
   }
 };
 
 function oncreate() {
-  const { map, center, zoom, defer: defer$$1 } = this.get();
-
-  // Use `changer` to avoid additional sets/changes
-  const change = changer$1();
-
-  // Pass map values to map map
-  map.set({ center, zoom });
-
-  // Subscribe to changes from map map
-  this.subscription = map.onchange(values => {
-    change(() => this.set(values));
-  });
-
-  // Update map map when relevant values change
-  this.observe('center', center => {
-    change(() => map.set({ center }));
-  }, { init: false });
-  this.observe('zoom', zoom => {
-    change(() => map.set({ zoom }));
-  }, { init: false });
-
   // Load map immediately or wait until interaction for defer
+  const defer$$1 = this.get('defer');
   if (!defer$$1 || defer$$1 === 'false') this.load();
 }
 
-function ondestroy() {
-  this.subscription.cancel();
+async function ondestroy() {
+  let { instance, loading } = this.get('instance');
+  
+  if (!instance && loading) instance = await loading;
+  if (!instance) return;
+
+  // TODO Remove listeners from instance
+  console.log('destroy', instance);
 }
 
 function encapsulateStyles$1(node) {
-	setAttribute(node, "svelte-3619822121", "");
+	setAttribute(node, "svelte-399374819", "");
 }
 
 function create_main_fragment$1(state, component) {
@@ -875,15 +626,19 @@ Map.prototype._checkReadOnly = function _checkReadOnly(newState) {
 
 /* C:\dev\pulse-map\packages\svelte-google-maps\Marker.html generated by Svelte v1.51.0 */
 function oncreate$1() {
-  let { map, lat, lng, title, label, icon, position } = this.get();
+  let { map, position, lat, lng, title, label, icon } = this.get();
   if (lat && lng && !position) position = { lat: Number(lat), lng: Number(lng) };
 
-  const marker = map.marker({ 
-    position,
-    title,
-    label,
-    icon
+  const marker = map.ready().then(({ api, instance }) => {
+    return new api.Marker({
+      position,
+      title,
+      label,
+      icon,
+      map: instance
+    });
   });
+  
   this.set({ marker });
 }
 
@@ -943,21 +698,29 @@ Marker.prototype._checkReadOnly = function _checkReadOnly(newState) {
 };
 
 /* C:\dev\pulse-map\packages\svelte-google-maps\Overlay.html generated by Svelte v1.51.0 */
-async function oncreate$2() {
+function oncreate$2() {
   const { map, lat, lng } = this.get();
+  const paneType = 'float';
   const container = this.refs.container;
 
-  const overlay = map.overlay(container, {
-    pane: 'float',
-    draw() {
-      // TODO Abstractions for positioning
+  const overlay = map.ready().then(({ api, instance }) => {
+    const overlay = new api.OverlayView();
 
+    overlay.onAdd = function() {
+      const pane = this.getPanes()[`${paneType}Pane`];
+      if (!pane) throw new Error(`No pane found for type "${paneType}"`);
+
+      pane.appendChild(container);
+    };
+    overlay.draw = function() {
+      // TODO
       const projection = this.getProjection();
       const position = new google.maps.LatLng(lat, lng);
       const translation = projection.fromLatLngToDivPixel(position);
+    };
 
-      // TODO Set translation on container
-    }
+    overlay.setMap(instance);
+    return overlay;
   });
   this.set({ overlay });
 }

@@ -1,15 +1,19 @@
 <script>
   export default {
     oncreate() {
-      let { map, lat, lng, title, label, icon, position } = this.get();
+      let { map, position, lat, lng, title, label, icon } = this.get();
       if (lat && lng && !position) position = { lat: Number(lat), lng: Number(lng) };
 
-      const marker = map.marker({ 
-        position,
-        title,
-        label,
-        icon
+      const marker = map.ready().then(({ api, instance }) => {
+        return new api.Marker({
+          position,
+          title,
+          label,
+          icon,
+          map: instance
+        });
       });
+      
       this.set({ marker });
     },
 

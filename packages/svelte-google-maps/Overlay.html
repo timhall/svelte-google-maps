@@ -4,21 +4,29 @@
 
 <script>
   export default {
-    async oncreate() {
+    oncreate() {
       const { map, lat, lng } = this.get();
+      const paneType = 'float';
       const container = this.refs.container;
 
-      const overlay = map.overlay(container, {
-        pane: 'float',
-        draw() {
-          // TODO Abstractions for positioning
+      const overlay = map.ready().then(({ api, instance }) => {
+        const overlay = new api.OverlayView();
 
+        overlay.onAdd = function() {
+          const pane = this.getPanes()[`${paneType}Pane`];
+          if (!pane) throw new Error(`No pane found for type "${paneType}"`);
+
+          pane.appendChild(container);
+        };
+        overlay.draw = function() {
+          // TODO
           const projection = this.getProjection();
           const position = new google.maps.LatLng(lat, lng);
           const translation = projection.fromLatLngToDivPixel(position);
+        };
 
-          // TODO Set translation on container
-        }
+        overlay.setMap(instance);
+        return overlay;
       });
       this.set({ overlay });
     }

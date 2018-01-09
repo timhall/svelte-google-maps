@@ -48,13 +48,6 @@ export function changer() {
   };
 }
 
-export function size(element) {
-  return {
-    width: element.offsetWidth,
-    height: element.offsetHeight
-  };
-}
-
 export function defer(callback) {
   setTimeout(callback, 0);
 }

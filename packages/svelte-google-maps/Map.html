@@ -14,7 +14,7 @@
 
 <script>
   import { intersection } from './src/events';
-  import { changer, size } from './src/utils';
+  import { changer } from './src/utils';
 
   export default {
     data() {
@@ -22,56 +22,77 @@
         defer: false,
         center: { lat: 0, lng: 0 },
         zoom: 8,
+        instance: null,
         loading: null,
         loaded: false
       };
     },
 
-    methods: {
-      async load() {
-        let { map, loaded, loading } = this.get();
-
-        if (loaded) return;
-        if (loading) return loading;
-
-        loading = map.load(this.refs.map);
-        this.set({ loaded: false, loading });
-
-        await loading;
-        this.set({ loaded: true, loading: null });
-      }
-    },
-
     events: { intersection },
 
     oncreate() {
-      const { map, center, zoom, defer } = this.get();
-
-      // Use `changer` to avoid additional sets/changes
-      const change = changer();
-
-      // Pass map values to map map
-      map.set({ center, zoom });
-
-      // Subscribe to changes from map map
-      this.subscription = map.onchange(values => {
-        change(() => this.set(values));
-      });
-
-      // Update map map when relevant values change
-      this.observe('center', center => {
-        change(() => map.set({ center }));
-      }, { init: false });
-      this.observe('zoom', zoom => {
-        change(() => map.set({ zoom }));
-      }, { init: false });
-
       // Load map immediately or wait until interaction for defer
+      const defer = this.get('defer');
       if (!defer || defer === 'false') this.load();
     },
 
-    ondestroy() {
-      this.subscription.cancel();
-    }
+    async ondestroy() {
+      let { instance, loading } = this.get('instance');
+      
+      if (!instance && loading) instance = await loading;
+      if (!instance) return;
+
+      // TODO Remove listeners from instance
+      console.log('destroy', instance);
+    },
+
+    methods: {
+      async load() {
+        let { instance, map, center, zoom, loaded, loading } = this.get();
+
+        if (loaded) return instance;
+        if (loading) return loading;
+
+        loading = map.load(this.refs.map, { center, zoom });
+        this.set({ loaded: false, loading });
+
+        instance = await loading;
+
+        // Setup two-way binding between component and map
+        // - Use `changer` to avoid additional sets/changes for internal changes
+        const change = changer();
+
+        // Attach listeners to instance
+        instance.addListener('zoom_changed', () => {
+          change(() => {
+            const zoom = instance.getZoom();
+            this.set({ zoom })
+          });
+        });
+
+        instance.addListener('center_changed', () => {          
+          change(() => {
+            const center = instance.getCenter();
+            const lat = center.lat();
+            const lng = center.lng();
+
+            this.set({ center: { lat, lng } })
+          });
+        });
+
+        // Attach observers to component
+        this.observe('center', center => {
+          change(() => instance.setCenter(center));
+        }, { init: false });
+
+        this.observe('zoom', zoom => {
+          change(() => instance.setZoom(zoom));
+        }, { init: false });
+
+        this.set({ instance, loaded: true, loading: null });
+
+        return instance;
+      }
+    },
   }
 </script>
