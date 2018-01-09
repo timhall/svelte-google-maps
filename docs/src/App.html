@@ -1,0 +1,50 @@
+<h1>Pulse Map</h1>
+
+<div ref:container>
+  <Map :context defer bind:center bind:zoom description="Map of GRTC Pulse Locations">
+    <Marker :context lat=37.540725 lng=-77.436048 title="Richmond, VA" />
+    <Marker :context lat=37.540725 lng=-77.336048 icon="https://maps.google.com/mapfiles/kml/shapes/parking_lot_maps.png" />
+    <Overlay :context lat=37.540725 lng=-77.436048>Overlay Content...</Overlay>
+  </Map>
+</div>
+
+<dl>
+  <dt>Latitude</dt><dd>{{center.lat.toFixed(6)}}</dd>
+  <dt>Longitude</dt><dd>{{center.lng.toFixed(6)}}</dd>
+  <dt>Zoom</dt><dd>{{zoom}}</dd>
+</dl>
+
+<form>
+  <label for="zoom">Zoom</label>
+  <input type="range" min="1" max="12" bind:value="zoom" />
+</form>
+
+<style>
+  ref:container {
+    max-width: 600px;
+    height: 400px;
+    border: solid 1px #ccc;
+  }
+</style>
+
+<script>
+  import { Context } from 'svelte-google-maps';
+  import Map from 'svelte-google-maps/Map.html';
+  import Marker from 'svelte-google-maps/Marker.html';
+  import Overlay from 'svelte-google-maps/Overlay.html';
+
+  const API_KEY = process.env.API_KEY;
+  const RICHMOND = { lat: 37.540725, lng: -77.436048 };
+
+  export default {
+    components: { Map, Marker, Overlay },
+    
+    data() {
+      return {
+        context: new Context(API_KEY, { beta: true }),
+        center: RICHMOND,
+        zoom: 11
+      };
+    }
+  }
+</script>

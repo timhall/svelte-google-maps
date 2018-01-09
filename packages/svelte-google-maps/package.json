@@ -1,0 +1,28 @@
+{
+  "name": "svelte-google-maps",
+  "version": "0.0.0",
+  "license": "MIT",
+  "main": "umd/svelte-google-maps.js",
+  "module": "es/svelte-google-maps.js",
+  "scripts": {
+    "build": "yarn build:es && yarn build:umd",
+    "build:es": "rollup -c",
+    "build:umd": "rollup -c rollup.config.umd.js"
+  },
+  "files": [
+    "es",
+    "umd"
+  ],
+  "devDependencies": {
+    "rollup": "^0.52.0",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-filesize": "^1.5.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-svelte": "^4.0.0",
+    "rollup-plugin-uglify-es": "^0.0.1"
+  },
+  "dependencies": {
+    "svelte": "^1.51.0"
+  }
+}

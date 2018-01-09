@@ -1,0 +1,19 @@
+<script>
+  export default {
+    oncreate() {
+      const { context, lat, lng, title, icon } = this.get();
+
+      const marker = context.marker({ 
+        position: { lat, lng },
+        title,
+        icon
+      });
+      this.set({ marker });
+    },
+
+    async ondestroy() {
+      const marker = await this.get('marker');
+      marker.setMap(null);
+    }
+  }
+</script>

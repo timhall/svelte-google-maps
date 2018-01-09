@@ -1,0 +1,77 @@
+<div ref:map on:intersection="load()"></div>
+<div ref:children><slot /></div>
+
+<style>
+  ref:map {
+    width: 100%;
+    height: 100%;
+  }
+
+  ref:children {
+    visibility: hidden;
+  }
+</style>
+
+<script>
+  import { intersection } from './src/events';
+  import { changer, size } from './src/utils';
+
+  export default {
+    data() {
+      return {
+        defer: false,
+        center: { lat: 0, lng: 0 },
+        zoom: 8,
+        loading: null,
+        loaded: false
+      };
+    },
+
+    methods: {
+      async load() {
+        let { context, loaded, loading } = this.get();
+
+        if (loaded) return;
+        if (loading) return loading;
+
+        loading = context.load(this.refs.map);
+        this.set({ loaded: false, loading });
+
+        await loading;
+        this.set({ loaded: true, loading: null });
+      }
+    },
+
+    events: { intersection },
+
+    oncreate() {
+      const { context, center, zoom, defer } = this.get();
+
+      // Use `changer` to avoid additional sets/changes
+      const change = changer();
+
+      // Pass map values to map context
+      context.set({ center, zoom });
+
+      // Subscribe to changes from map context
+      this.subscription = context.onchange(values => {
+        change(() => this.set(values));
+      });
+
+      // Update map context when relevant values change
+      this.observe('center', center => {
+        change(() => context.set({ center }));
+      }, { init: false });
+      this.observe('zoom', zoom => {
+        change(() => context.set({ zoom }));
+      }, { init: false });
+
+      // Load map immediately or wait until interaction for defer
+      if (!defer || defer === 'false') this.load();
+    },
+
+    ondestroy() {
+      this.subscription.cancel();
+    }
+  }
+</script>

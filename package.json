@@ -1,0 +1,8 @@
+{
+  "name": "pulse-map",
+  "private": true,
+  "workspaces": ["packages/*", "docs"],
+  "scripts": {
+    "build": "cd packages/svelte-google-maps && yarn build && cd ../pulse-map && yarn build"
+  }
+}

@@ -1,0 +1,7 @@
+umd
+es
+docs/public/bundle.*
+
+node_modules
+.vscode
+.DS_store

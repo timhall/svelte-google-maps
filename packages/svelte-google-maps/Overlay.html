@@ -1,0 +1,26 @@
+<div ref:container>
+  <slot />
+</div>
+
+<script>
+  export default {
+    async oncreate() {
+      const { context, lat, lng } = this.get();
+      const container = this.refs.container;
+
+      const overlay = context.overlay(container, {
+        pane: 'float',
+        draw() {
+          // TODO Abstractions for positioning
+
+          const projection = this.getProjection();
+          const position = new google.maps.LatLng(lat, lng);
+          const translation = projection.fromLatLngToDivPixel(position);
+
+          // TODO Set translation on container
+        }
+      });
+      this.set({ overlay });
+    }
+  }
+</script>
