@@ -1,91 +1,53 @@
-<!-- Svelte needs to maintain control of DOM, so pass inner content to InfoWindow -->
-<!-- TODO Use <Overlay> -->
-<div>
-  <div ref:content><slot /></div>
-</div>
+<Overlay :map :position>
+  <div ref:container style="--background-color: {{background}};">
+    <div><slot /></div>
+    <button ref:close on:click="fire('close')">&times;</button>
+  </div>
+</Overlay>
 
 <style>
-  :global(.svelte-google-maps-iw) {
-    background-color: red;
+  ref:container {
+    display: flex;
+    position: relative;
+    font-size: 1rem;
+    background-color: white;
+    background-color: var(--background-color);
+    padding: 0.6rem 0 0.6rem 0.8rem;
+    transform: translate(-50%, calc(-100% - 10px));
+    box-shadow: 0 0 0.25rem 0 #999;
+  }
+
+  ref:container:after {
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    margin-left: -10px;
+    width: 0;
+    border-top: 10px solid white;
+    border-top: 10px solid var(--background-color);
+    border-right: 10px solid transparent;
+    border-left: 10px solid transparent;
+    content: " ";
+    font-size: 0;
+    line-height: 0;
+  }
+
+  ref:close {
+    padding: 0 0.5rem 0 0.5rem;
+    font-size: 1rem;
   }
 </style>
 
 <script>
-  import { deferred, defer, changer } from './src/utils';
+  import Overlay from './Overlay.html';
 
   export default {
+    components: { Overlay },
+
     data() {
       return {
-        info: deferred(),
-        manual: false
+        background: 'white'
       };
-    },
-
-    async oncreate() {
-      const { map: context, position, manual } = this.get();
-      const content = this.refs.content;
-
-      const { api, map } = await context.ready();
-      const info = new api.InfoWindow({
-        content,
-        position,
-        pixelOffset: new api.Size(0, 10)
-      });
-
-      const change = changer();
-      info.addListener('closeclick', () => {
-        this.fire('close', info);
-      });
-      info.addListener('position_changed', () => {
-        change(() => {
-          const position = info.getPosition();
-          const lat = position.lat();
-          const lng = position.lng();
-
-          this.set({ position: { lat, lng } });
-        });
-      });
-
-      // For some reason, the arrow is mis-positioned
-      // for the time-being, hide it.
-      info.addListener('domready', () => {
-        document.querySelectorAll('.gm-style-iw').forEach(tooltip => {
-          try {
-            const background = tooltip.parentNode.firstChild;
-            const shadow = background.childNodes[0];
-            const arrow = background.childNodes[2];
-            
-            shadow.style.display = arrow.style.display = 'none'; 
-          } catch(err) {}
-        });
-      });   
-      
-      this.observe('position', position => {
-        change(() => info.setPosition(position));
-      });
-
-      this.get('info').resolve(info);
-
-      if (!manual) this.open();
-    },
-
-    async ondestroy() {
-      this.close();
-    },
-
-    methods: {
-      async open() {
-        const map = await this.get('map').map;
-        const info = await this.get('info');
-
-        info.open(map);
-      },
-
-      async close() {
-        const info = await this.get('info');
-
-        info.close();
-      }
     }
   }
 </script>

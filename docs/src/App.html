@@ -10,8 +10,10 @@
 
       <Polyline :map path={{route}} />
 
-      {{#if selected}}
-        <Info :map position={{selected.position}} on:close="set({ selected: null })">{{selected.title}}</Info>
+      {{#if selected}}  
+        <Info :map position={{selected.position}} on:close="set({ selected: null })">
+          <div class="whitespace-no-wrap">{{selected.title}}</div>
+        </Info>
       {{/if}}
     </Map>
   </div>
@@ -42,6 +44,7 @@
   import { center, stations, route } from './data';
 
   const API_KEY = process.env.API_KEY;
+  
   const icon = {
     path: 'M 0,0 m -2,0 a 2,2 0 2,0 4,0 a 2,2 0 2,0 -4,0',
     fillColor: '#61bb46',

@@ -15,7 +15,7 @@
     },
 
     async oncreate() {
-      const { map: context, mapPane, position, bounds } = this.get();
+      const { map: context, mapPane } = this.get();
       const container = this.refs.container;
       
       // Normalize offset into function that always returns { x, y }
@@ -33,6 +33,8 @@
       };
 
       overlay.draw = function () {
+        const { position, bounds } = component.get();
+        
         if (position) {
           const { lat, lng } = position;
           const offset = getOffset();
@@ -44,9 +46,10 @@
           component.set({ translation });
         } else if (bounds) {
           // TODO
-          console.log('bounds', bounds);
         }
       };
+
+      overlay.onRemove = () => {};
 
       // Redraw overlay on positioning changes
       this.observe('position', () => overlay.draw(), { init: false });
@@ -58,6 +61,11 @@
 
       overlay.setMap(map);
       this.get('overlay').resolve(overlay);
+    },
+
+    async ondestroy() {
+      const overlay = await this.get('overlay');
+      overlay.setMap(null);
     }
   }
 
