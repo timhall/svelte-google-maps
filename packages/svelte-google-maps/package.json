@@ -18,7 +18,9 @@
     "src",
     "Map.html",
     "Marker.html",
-    "Overlay.html"
+    "Info.html",
+    "Overlay.html",
+    "Polyline.html"
   ],
   "devDependencies": {
     "rollup": "^0.52.0",

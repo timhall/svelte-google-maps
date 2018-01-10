@@ -1,6 +1,6 @@
 # svelte-google-maps
 
-- [svelte-google-maps](https://github.com/timhall/svelte-google-maps/tree/master/packages/svelte-google-docs)
+- [svelte-google-maps](https://github.com/timhall/svelte-google-maps/tree/master/packages/svelte-google-maps)
 - [Example](https://github.com/timhall/svelte-google-maps/tree/master/docs)
 
 ## Development
