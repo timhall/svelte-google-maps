@@ -1,53 +1,39 @@
-<Overlay :map :position>
-  <div ref:container style="--background-color: {{background}};">
-    <div><slot /></div>
-    <button ref:close on:click="fire('close')">&times;</button>
-  </div>
-</Overlay>
-
-<style>
-  ref:container {
-    display: flex;
-    position: relative;
-    font-size: 1rem;
-    background-color: white;
-    background-color: var(--background-color);
-    padding: 0.6rem 0 0.6rem 0.8rem;
-    transform: translate(-50%, calc(-100% - 10px));
-    box-shadow: 0 0 0.25rem 0 #999;
-  }
-
-  ref:container:after {
-    position: absolute;
-    bottom: -9px;
-    left: 50%;
-    margin-left: -10px;
-    width: 0;
-    border-top: 10px solid white;
-    border-top: 10px solid var(--background-color);
-    border-right: 10px solid transparent;
-    border-left: 10px solid transparent;
-    content: " ";
-    font-size: 0;
-    line-height: 0;
-  }
-
-  ref:close {
-    padding: 0 0.5rem 0 0.5rem;
-    font-size: 1rem;
-  }
-</style>
+<div>
+  <div ref:content><slot /></div>
+</div>
 
 <script>
-  import Overlay from './Overlay.html';
+  import { deferred } from './src/utils';
 
   export default {
-    components: { Overlay },
-
     data() {
       return {
-        background: 'white'
+        info: deferred()
       };
+    },
+    
+    async oncreate() {
+      const { map: context, position } = this.get();
+      const content = this.refs.content;
+
+      const { api, map } = await context.ready();
+      const info = new api.InfoWindow({
+        content,
+        position
+      });
+
+      info.addListener('closeclick', () => {
+        this.fire('close', info);
+      });
+      this.observe('position', position => info.setPosition(position));
+      
+      info.open(map);
+      this.get('info').resolve(info);
+    },
+
+    async ondestroy() {
+      const info = await this.get('info');
+      info.close();
     }
   }
 </script>
