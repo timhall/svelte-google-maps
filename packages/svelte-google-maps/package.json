@@ -1,6 +1,6 @@
 {
   "name": "svelte-google-maps",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "description": "Google Maps components for Svelte",
   "homepage": "https://github.com/timhall/svelte-google-maps",
