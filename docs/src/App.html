@@ -12,7 +12,7 @@
 
       {{#if selected}}  
         <Info :map position={{selected.position}} on:close="set({ selected: null })">
-          <div class="whitespace-no-wrap">{{selected.title}}</div>
+          <div class="text-sm font-medium whitespace-no-wrap">{{selected.title}}</div>
         </Info>
       {{/if}}
     </Map>

@@ -814,10 +814,16 @@ async function oncreate$3() {
     position
   });
 
-  info.addListener('closeclick', () => {
-    this.fire('close', info);
-  });
-  this.observe('position', position => info.setPosition(position));
+  info.addListener('closeclick', () => this.fire('close', info));
+
+  this.observe('position', position => {
+    info.setPosition(position);
+
+    // If another InfoWindow is opened (e.g. Place)
+    // then component may not have been destroyed
+    // -> check for no map on position change, and re-open
+    if (!info.map) info.open(map);
+  }, { init: false });
   
   info.open(map);
   this.get('info').resolve(info);
@@ -986,7 +992,7 @@ function data() {
 }
 
 function encapsulateStyles(node) {
-	setAttribute(node, "svelte-2089043395", "");
+	setAttribute(node, "svelte-2490956062", "");
 }
 
 function create_main_fragment(state, component) {
@@ -1409,7 +1415,7 @@ function create_if_block(state, component) {
 		},
 
 		h: function hydrate() {
-			div.className = "whitespace-no-wrap";
+			div.className = "text-sm font-medium whitespace-no-wrap";
 		},
 
 		m: function mount(target, anchor) {
