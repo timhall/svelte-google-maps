@@ -8,7 +8,7 @@
         <Marker :map position={{station.position}} title={{station.title}} :icon on:click="set({ selected: station })" />
       {{/each}}
 
-      <Polyline :map path={{route}} />
+      <Polyline :map path={{route}} color="#005da5" weight="4" />
 
       {{#if selected}}  
         <Info :map position={{selected.position}} on:close="set({ selected: null })">
@@ -19,10 +19,15 @@
   </div>
 </div>
 
-<div class="my-4 text-grey-darker text-sm text-right">
-  Latitude: {{center.lat.toFixed(6)}} &mdash; Longitude: {{center.lng.toFixed(6)}} &mdash;
-  <label for="zoom">Zoom</label>:
-  <input type="range" min="1" max="18" bind:value="zoom" class="align-text-top" /> {{zoom}}
+<div class="my-4 text-grey-darker text-sm sm:text-right">
+  <div class="sm:inline-block">Latitude: {{center.lat.toFixed(6)}}</div>
+  <span class="invisible sm:visible">&mdash;</span>
+  <div class="sm:inline-block">Longitude: {{center.lng.toFixed(6)}}</div>
+  <span class="invisible sm:visible">&mdash;</span>
+  <div class="sm:inline-block">
+    <label for="zoom">Zoom</label>:
+    <input type="range" min="1" max="18" bind:value="zoom" class="align-text-top" /> {{zoom}}
+  </div>
 </div>
 
 <style>
@@ -44,7 +49,6 @@
   import { center, stations, route } from './data';
 
   const API_KEY = process.env.API_KEY;
-  
   const icon = {
     path: 'M 0,0 m -2,0 a 2,2 0 2,0 4,0 a 2,2 0 2,0 -4,0',
     fillColor: '#61bb46',
@@ -65,11 +69,6 @@
         stations,
         route,
         icon,
-
-        offset(container) {
-          const { offsetWidth: width } = container;
-          return { x: -width / 2, y: 10 };
-        },
         selected: null
       };
     }
