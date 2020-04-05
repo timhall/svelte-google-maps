@@ -1,10 +1,12 @@
-import replace from 'rollup-plugin-replace';
-import svelte from 'rollup-plugin-svelte';
-import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import filesize from 'rollup-plugin-filesize';
+import resolve from 'rollup-plugin-node-resolve';
+import replace from 'rollup-plugin-replace';
+import svelte from 'rollup-plugin-svelte';
 
-const production = false;
+require('dotenv').config({ path: '../.env' });
+
+const production = process.env.NODE_ENV === 'production';
 
 export default {
   name: 'app',
@@ -13,37 +15,35 @@ export default {
     sourcemap: true,
     format: 'iife',
     file: 'public/bundle.js',
-    globals: {}
+    globals: {},
   },
   external: [],
 
   plugins: [
     replace({
-      'process.env.NODE_ENV': JSON.stringify(
-        production ? 'production' : 'development'
-      ),
+      'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
       'process.env.API_KEY': JSON.stringify(
-        production ? 'AIzaSyAiBthVwmMBNM5PwhmzUOveXPMGD6nCymo' : 'AIzaSyD7oUvzDD-eXoWc91eECCa0eMHmHVZb1Cg'
-      )
+        production ? process.env.GOOGLE_MAPS_PROD_KEY : process.env.GOOGLE_MAPS_DEV_KEY
+      ),
     }),
 
     svelte({
       dev: !production,
-      css: css => {
+      css: (css) => {
         css.write('public/bundle.css');
       },
       cascade: false,
       hydratable: true,
-      store: true
+      store: true,
     }),
 
     resolve(),
     commonjs(),
 
-    filesize()
+    filesize(),
   ],
 
   watch: {
-    chokidar: true
-  }
+    chokidar: true,
+  },
 };

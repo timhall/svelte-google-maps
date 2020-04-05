@@ -1,3 +1,5 @@
+**OUT OF DATE** This project was designed for Svelte v1 and is currently incompatible with v3
+
 # svelte-google-maps
 
 - [svelte-google-maps](https://github.com/timhall/svelte-google-maps/tree/master/packages/svelte-google-maps)

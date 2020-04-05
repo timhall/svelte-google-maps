@@ -1,8 +1,15 @@
 {
   "name": "svelte-google-maps-monorepo",
   "private": true,
-  "workspaces": ["packages/*", "docs"],
+  "workspaces": [
+    "packages/*",
+    "docs"
+  ],
   "scripts": {
     "build": "cd packages/svelte-google-maps && yarn build && cd ../../docs && yarn build"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 100
   }
 }
